@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevHub — El Universo del Programador</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- TOAST NOTIFICATIONS -->
+<div id="toast" class="toast hidden">
+  <span class="toast-icon" id="toastIcon">✅</span>
+  <span id="toastMsg">Operación exitosa</span>
+</div>
+
+<!-- ===== LOGIN MODAL ===== -->
+<div id="loginModal" class="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeLogin()">✕</button>
+    <h2 data-i18n="login.title">Bienvenido a DevHub</h2>
+    <p data-i18n="login.sub">Gestiona tus proyectos de desarrollo</p>
+    <div class="tab-switcher">
+      <button class="tab-sw-btn active" id="loginTabBtn" onclick="switchAuthTab('login')" data-i18n="login.tab">Iniciar Sesión</button>
+      <button class="tab-sw-btn" id="registerTabBtn" onclick="switchAuthTab('register')" data-i18n="register.tab">Registrarse</button>
+    </div>
+    <!-- LOGIN FORM -->
+    <div id="loginForm">
+      <div class="form-group">
+        <label class="form-label" data-i18n="login.email">Email</label>
+        <input class="form-input" type="email" id="loginEmail" placeholder="dev@devhub.io">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="login.password">Contraseña</label>
+        <input class="form-input" type="password" id="loginPass" placeholder="••••••••">
+      </div>
+      <button class="btn btn-green" style="width:100%;padding:11px" onclick="doLogin()" data-i18n="login.btn">Ingresar</button>
+      <p style="text-align:center;margin-top:14px;font-size:.78rem;color:var(--text-muted)">
+        <span data-i18n="login.demo">Demo:</span> demo@devhub.io / demo123
+      </p>
+    </div>
+    <!-- REGISTER FORM -->
+    <div id="registerForm" style="display:none">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" data-i18n="register.name">Nombre</label>
+          <input class="form-input" type="text" id="regName" placeholder="John Dev">
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="register.role">Especialización</label>
+          <select class="form-select" id="regRole">
+            <option value="frontend">Frontend Dev</option>
+            <option value="backend">Backend Dev</option>
+            <option value="fullstack">Full Stack Dev</option>
+            <option value="mobile">Mobile Dev</option>
+            <option value="data">Data Scientist</option>
+            <option value="devops">DevOps Engineer</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="login.email">Email</label>
+        <input class="form-input" type="email" id="regEmail" placeholder="dev@devhub.io">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="login.password">Contraseña</label>
+        <input class="form-input" type="password" id="regPass" placeholder="••••••••">
+      </div>
+      <button class="btn btn-green" style="width:100%;padding:11px" onclick="doRegister()" data-i18n="register.btn">Crear Cuenta</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== NEW TASK MODAL ===== -->
+<div id="taskModal" class="modal-overlay hidden">
+  <div class="modal" style="max-width:520px">
+    <button class="modal-close" onclick="closeTaskModal()">✕</button>
+    <h2 data-i18n="task.new">Nueva Tarea</h2>
+    <p data-i18n="task.sub">Agregar tarea al tablero Scrum</p>
+    <div class="form-group">
+      <label class="form-label" data-i18n="task.title">Título</label>
+      <input class="form-input" type="text" id="taskTitle" placeholder="Implementar autenticación JWT...">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" data-i18n="task.branch">Rama</label>
+        <select class="form-select" id="taskBranch">
+          <option value="Frontend">Frontend</option>
+          <option value="Backend">Backend</option>
+          <option value="Mobile">Mobile</option>
+          <option value="DevOps">DevOps</option>
+          <option value="Data">Data Science</option>
+          <option value="Security">Security</option>
+          <option value="QA">QA/Testing</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="task.status">Estado</label>
+        <select class="form-select" id="taskStatus">
+          <option value="pend" data-i18n="col.pend">Pendiente</option>
+          <option value="dev" data-i18n="col.dev">En Desarrollo</option>
+          <option value="future" data-i18n="col.future">A Futuro</option>
+          <option value="done" data-i18n="col.done">Finalizado</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" data-i18n="task.priority">Prioridad</label>
+        <select class="form-select" id="taskPriority">
+          <option value="high">🔴 Alta</option>
+          <option value="mid" selected>🟡 Media</option>
+          <option value="low">🟢 Baja</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="task.due">Fecha límite</label>
+        <input class="form-input" type="date" id="taskDate">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="task.desc">Descripción</label>
+      <input class="form-input" type="text" id="taskDesc" placeholder="Descripción breve de la tarea...">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeTaskModal()" data-i18n="cancel">Cancelar</button>
+      <button class="btn btn-green" onclick="saveTask()" data-i18n="task.save">Guardar Tarea</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== NEW PROJECT MODAL ===== -->
+<div id="projectModal" class="modal-overlay hidden">
+  <div class="modal" style="max-width:520px">
+    <button class="modal-close" onclick="document.getElementById('projectModal').classList.add('hidden')">✕</button>
+    <h2 data-i18n="project.new">Nuevo Proyecto</h2>
+    <p data-i18n="project.sub">Crear un nuevo proyecto en tu workspace</p>
+    <div class="form-group">
+      <label class="form-label" data-i18n="project.name">Nombre del proyecto</label>
+      <input class="form-input" type="text" id="projName" placeholder="Mi API REST...">
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-i18n="project.desc">Descripción</label>
+      <input class="form-input" type="text" id="projDesc" placeholder="Descripción corta...">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" data-i18n="project.branch">Rama</label>
+        <select class="form-select" id="projBranch">
+          <option>Frontend</option><option>Backend</option><option>Full Stack</option>
+          <option>Mobile</option><option>Data Science</option><option>DevOps</option>
+          <option>Security</option><option>Game Dev</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="project.method">Metodología</label>
+        <select class="form-select" id="projMethod">
+          <option value="scrum">Scrum</option>
+          <option value="kanban">Kanban</option>
+          <option value="waterfall">Waterfall</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('projectModal').classList.add('hidden')" data-i18n="cancel">Cancelar</button>
+      <button class="btn btn-green" onclick="saveProject()" data-i18n="project.save">Crear Proyecto</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== NAVBAR ===== -->
+<nav>
+  <a class="nav-logo" onclick="showPage('home')">
+    <svg width="30" height="30" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#238636"/><path d="M8 10L14 16L8 22M16 22H24" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    DevHub
+  </a>
+  <ul class="nav-links" id="mainNav">
+    <li><a onclick="showPage('home')" id="nav-home" data-i18n="nav.home">Inicio</a></li>
+    <li><a onclick="showPage('branches')" id="nav-branches" data-i18n="nav.branches">Ramas</a></li>
+    <li><a onclick="requireLogin('admin')" id="nav-admin" data-i18n="nav.admin">Administración</a></li>
+    <li><a onclick="requireLogin('projects')" id="nav-projects" data-i18n="nav.projects">Proyectos</a></li>
+    <li><a onclick="showPage('roadmap')" id="nav-roadmap" data-i18n="nav.roadmap">Roadmap</a></li>
+  </ul>
+  <div class="nav-actions">
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('es')">ES</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('pt')">PT</button>
+    </div>
+    <div id="authButtons">
+      <button class="btn btn-ghost" onclick="openLogin()" data-i18n="nav.login">Iniciar sesión</button>
+      <button class="btn btn-green" onclick="openLogin()" data-i18n="nav.register">Registrarse</button>
+    </div>
+    <div id="userButtons" style="display:none">
+      <span id="navUserName" style="font-size:.855rem;color:var(--text-muted);margin-right:8px"></span>
+      <button class="btn btn-ghost" onclick="doLogout()" data-i18n="nav.logout">Salir</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== PAGE: HOME ===== -->
+<div id="page-home" class="page active">
+  <section class="hero">
+    <div class="hero-badge" data-i18n="hero.badge">⚡ v2.0 — Actualizado para 2026</div>
+    <h1><span data-i18n="hero.h1a">El universo del</span><br><span data-i18n="hero.h1b">Programador</span></h1>
+    <p data-i18n="hero.p">Explora todas las ramas de la programación, gestiona tus proyectos con Scrum y traza tu camino hacia el desarrollo profesional.</p>
+    <div class="hero-actions">
+      <button class="btn btn-green btn-lg" onclick="openLogin()" data-i18n="hero.btn1">🚀 Comenzar ahora</button>
+      <button class="btn btn-ghost btn-lg" onclick="showPage('branches')" data-i18n="hero.btn2">📖 Explorar ramas</button>
+    </div>
+  </section>
+  <div class="stats-bar">
+    <div class="stat-item"><span class="stat-num">12</span><span class="stat-label" data-i18n="stats.branches">Ramas</span></div>
+    <div class="stat-item"><span class="stat-num">240+</span><span class="stat-label" data-i18n="stats.tech">Tecnologías</span></div>
+    <div class="stat-item"><span class="stat-num">50K+</span><span class="stat-label" data-i18n="stats.projects">Proyectos</span></div>
+    <div class="stat-item"><span class="stat-num">180K+</span><span class="stat-label" data-i18n="stats.devs">Devs</span></div>
+    <div class="stat-item"><span class="stat-num">∞</span><span class="stat-label" data-i18n="stats.poss">Posibilidades</span></div>
+  </div>
+</div>
+
+<!-- ===== PAGE: BRANCHES ===== -->
+<div id="page-branches" class="page">
+  <div class="main-layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <h3 data-i18n="sidebar.branches">🌿 Ramas</h3>
+        <button class="sidebar-link active" onclick="filterBranchPage('all',this)"><span class="sidebar-dot" style="background:#8b949e"></span><span data-i18n="filter.all">Todas</span><span class="count-badge">12</span></button>
+        <button class="sidebar-link" onclick="filterBranchPage('frontend',this)"><span class="sidebar-dot" style="background:#f97316"></span>Frontend<span class="count-badge">1</span></button>
+        <button class="sidebar-link" onclick="filterBranchPage('backend',this)"><span class="sidebar-dot" style="background:#238636"></span>Backend<span class="count-badge">1</span></button>
+        <button class="sidebar-link" onclick="filterBranchPage('mobile',this)"><span class="sidebar-dot" style="background:#8b5cf6"></span>Mobile<span class="count-badge">1</span></button>
+        <button class="sidebar-link" onclick="filterBranchPage('data',this)"><span class="sidebar-dot" style="background:#06b6d4"></span>Data / IA<span class="count-badge">2</span></button>
+        <button class="sidebar-link" onclick="filterBranchPage('devops',this)"><span class="sidebar-dot" style="background:#eab308"></span>DevOps<span class="count-badge">1</span></button>
+        <button class="sidebar-link" onclick="filterBranchPage('security',this)"><span class="sidebar-dot" style="background:#ef4444"></span>Security<span class="count-badge">1</span></button>
+        <button class="sidebar-link" onclick="filterBranchPage('game',this)"><span class="sidebar-dot" style="background:#ec4899"></span>Game Dev<span class="count-badge">1</span></button>
+        <button class="sidebar-link" onclick="filterBranchPage('blockchain',this)"><span class="sidebar-dot" style="background:#1f6feb"></span>Blockchain<span class="count-badge">1</span></button>
+        <button class="sidebar-link" onclick="filterBranchPage('embedded',this)"><span class="sidebar-dot" style="background:#64748b"></span>Embedded<span class="count-badge">1</span></button>
+        <button class="sidebar-link" onclick="filterBranchPage('scientific',this)"><span class="sidebar-dot" style="background:#0ea5e9"></span>Scientific<span class="count-badge">1</span></button>
+        <button class="sidebar-link" onclick="filterBranchPage('qa',this)"><span class="sidebar-dot" style="background:#10b981"></span>QA/Testing<span class="count-badge">1</span></button>
+      </div>
+      <div class="sidebar-section">
+        <h3 data-i18n="sidebar.trends">🔥 Tendencias</h3>
+        <button class="sidebar-link"><span>🤖</span> IA / LLMs</button>
+        <button class="sidebar-link"><span>☁️</span> Edge Computing</button>
+        <button class="sidebar-link"><span>🦀</span> Rust</button>
+        <button class="sidebar-link"><span>📡</span> WebAssembly</button>
+        <button class="sidebar-link"><span>⚛️</span> Quantum Dev</button>
+      </div>
+    </aside>
+    <main>
+      <div class="section-title" data-i18n="branches.title">🌿 Ramas de la Programación</div>
+      <p class="section-subtitle" data-i18n="branches.sub">Explora todas las especializaciones del mundo del desarrollo de software</p>
+      <div class="branches-grid" id="branchesGrid">
+        <!-- rendered by JS -->
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ===== PAGE: ADMIN (SCRUM BOARD) ===== -->
+<div id="page-admin" class="page">
+  <div class="main-layout">
+    <aside class="sidebar">
+      <div id="sidebarUser"></div>
+      <div class="sidebar-section">
+        <h3 data-i18n="sidebar.sprint">📋 Sprint Activo</h3>
+        <button class="sidebar-link active" onclick="switchAdminTab('board',this)"><span>🗂️</span><span data-i18n="admin.board">Tablero Scrum</span></button>
+        <button class="sidebar-link" onclick="switchAdminTab('backlog',this)"><span>📋</span><span data-i18n="admin.backlog">Backlog</span></button>
+        <button class="sidebar-link" onclick="switchAdminTab('metrics',this)"><span>📊</span><span data-i18n="admin.metrics">Métricas</span></button>
+      </div>
+      <div class="sidebar-section">
+        <h3 data-i18n="sidebar.filters">🔍 Filtros</h3>
+        <button class="sidebar-link" id="filterAll" onclick="filterTasks('all',this)"><span>📌</span><span data-i18n="filter.all">Todas las tareas</span><span class="count-badge" id="cntAll">0</span></button>
+        <button class="sidebar-link" id="filterPend" onclick="filterTasks('pend',this)"><span style="color:var(--pend-color)">⏳</span><span data-i18n="col.pend">Pendiente</span><span class="count-badge" id="cntPend">0</span></button>
+        <button class="sidebar-link" id="filterDev" onclick="filterTasks('dev',this)"><span style="color:var(--dev-color)">⚡</span><span data-i18n="col.dev">En Desarrollo</span><span class="count-badge" id="cntDev">0</span></button>
+        <button class="sidebar-link" id="filterFuture" onclick="filterTasks('future',this)"><span style="color:var(--futuro-color)">🔮</span><span data-i18n="col.future">A Futuro</span><span class="count-badge" id="cntFuture">0</span></button>
+        <button class="sidebar-link" id="filterDone" onclick="filterTasks('done',this)"><span style="color:var(--done-color)">✅</span><span data-i18n="col.done">Finalizado</span><span class="count-badge" id="cntDone">0</span></button>
+      </div>
+    </aside>
+    <main>
+      <!-- BOARD TAB -->
+      <div id="adminBoard">
+        <div class="board-header">
+          <div class="sprint-info">
+            <div class="section-title" data-i18n="admin.title">📋 Administración de Proyectos</div>
+            <span class="sprint-badge" data-i18n="sprint.name">Sprint #7</span>
+            <span class="sprint-dates">24 feb — 10 mar 2026</span>
+          </div>
+          <div class="board-actions">
+            <button class="btn btn-ghost btn-sm" onclick="completeSprint()" data-i18n="sprint.complete">Completar Sprint</button>
+            <button class="btn btn-green btn-sm" onclick="openTaskModal()" data-i18n="task.add">+ Nueva Tarea</button>
+          </div>
+        </div>
+        <div class="info-panel" data-i18n="admin.info">ℹ️ Metodología Scrum — arrastra las tarjetas entre columnas para actualizar el estado</div>
+        <div class="scrum-board" id="scrumBoard">
+          <!-- Columna: Pendiente -->
+          <div class="sprint-col col-pend" id="col-pend" ondragover="allowDrop(event)" ondrop="dropTask(event,'pend')">
+            <div class="sprint-col-header">
+              <span class="sprint-col-title" data-i18n="col.pend">Pendiente</span>
+              <span class="sprint-count" id="cnt-pend">0</span>
+            </div>
+            <div id="tasks-pend"></div>
+            <button class="add-task-btn" onclick="openTaskModalStatus('pend')">+ <span data-i18n="task.add2">agregar tarea</span></button>
+          </div>
+          <!-- Columna: En Desarrollo -->
+          <div class="sprint-col col-dev" id="col-dev" ondragover="allowDrop(event)" ondrop="dropTask(event,'dev')">
+            <div class="sprint-col-header">
+              <span class="sprint-col-title" data-i18n="col.dev">En Desarrollo</span>
+              <span class="sprint-count" id="cnt-dev">0</span>
+            </div>
+            <div id="tasks-dev"></div>
+            <button class="add-task-btn" onclick="openTaskModalStatus('dev')">+ <span data-i18n="task.add2">agregar tarea</span></button>
+          </div>
+          <!-- Columna: A Futuro -->
+          <div class="sprint-col col-future" id="col-future" ondragover="allowDrop(event)" ondrop="dropTask(event,'future')">
+            <div class="sprint-col-header">
+              <span class="sprint-col-title" data-i18n="col.future">A Futuro</span>
+              <span class="sprint-count" id="cnt-future">0</span>
+            </div>
+            <div id="tasks-future"></div>
+            <button class="add-task-btn" onclick="openTaskModalStatus('future')">+ <span data-i18n="task.add2">agregar tarea</span></button>
+          </div>
+          <!-- Columna: Finalizado -->
+          <div class="sprint-col col-done" id="col-done" ondragover="allowDrop(event)" ondrop="dropTask(event,'done')">
+            <div class="sprint-col-header">
+              <span class="sprint-col-title" data-i18n="col.done">Finalizado ✓</span>
+              <span class="sprint-count" id="cnt-done">0</span>
+            </div>
+            <div id="tasks-done"></div>
+            <button class="add-task-btn" onclick="openTaskModalStatus('done')">+ <span data-i18n="task.add2">agregar tarea</span></button>
+          </div>
+        </div>
+      </div>
+      <!-- BACKLOG TAB -->
+      <div id="adminBacklog" style="display:none">
+        <div class="board-header">
+          <div class="section-title" data-i18n="admin.backlog">📋 Backlog del Proyecto</div>
+          <button class="btn btn-green btn-sm" onclick="openTaskModal()" data-i18n="task.add">+ Nueva Tarea</button>
+        </div>
+        <div class="filter-bar">
+          <input type="text" id="searchBacklog" placeholder="🔍 Buscar tarea..." oninput="renderBacklog()">
+          <select id="filterBranchBacklog" onchange="renderBacklog()">
+            <option value="all">Todas las ramas</option>
+            <option>Frontend</option><option>Backend</option><option>Mobile</option>
+            <option>DevOps</option><option>Data</option><option>Security</option><option>QA</option>
+          </select>
+        </div>
+        <div id="backlogList"></div>
+      </div>
+      <!-- METRICS TAB -->
+      <div id="adminMetrics" style="display:none">
+        <div class="section-title" data-i18n="admin.metrics">📊 Métricas del Sprint</div>
+        <p class="section-subtitle" data-i18n="admin.metrics.sub">Resumen de progreso y velocidad del equipo</p>
+        <div id="metricsContent" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:28px"></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:24px">
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:16px" data-i18n="metrics.burndown">🔥 Burndown Visual</h3>
+          <div id="burndownViz" style="display:flex;gap:4px;align-items:flex-end;height:120px"></div>
+          <div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--text-muted);margin-top:6px;font-family:'JetBrains Mono',monospace">
+            <span data-i18n="metrics.start">Inicio Sprint</span><span data-i18n="metrics.end">Fin Sprint</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ===== PAGE: PROJECTS ===== -->
+<div id="page-projects" class="page">
+  <div class="main-layout">
+    <aside class="sidebar">
+      <div id="sidebarUser2"></div>
+      <div class="sidebar-section">
+        <h3 data-i18n="sidebar.myprojects">📁 Mis Proyectos</h3>
+        <button class="sidebar-link active"><span>📂</span><span data-i18n="projects.all">Todos</span><span class="count-badge" id="projCount">0</span></button>
+        <button class="sidebar-link"><span>🚀</span><span>Scrum</span></button>
+        <button class="sidebar-link"><span>📋</span><span>Kanban</span></button>
+        <button class="sidebar-link"><span>💧</span><span>Waterfall</span></button>
+      </div>
+      <div class="sidebar-section">
+        <h3>🌐 <span data-i18n="sidebar.langs">Lenguajes</span></h3>
+        <button class="sidebar-link"><span style="color:#f7df1e">●</span> JavaScript</button>
+        <button class="sidebar-link"><span style="color:#3572A5">●</span> Python</button>
+        <button class="sidebar-link"><span style="color:#3178c6">●</span> TypeScript</button>
+        <button class="sidebar-link"><span style="color:#b07219">●</span> Java</button>
+        <button class="sidebar-link"><span style="color:#F74F00">●</span> Rust</button>
+      </div>
+    </aside>
+    <main>
+      <div class="board-header">
+        <div>
+          <div class="section-title" data-i18n="projects.title">📁 Mis Proyectos</div>
+          <p class="section-subtitle" data-i18n="projects.sub">Gestiona todos tus repositorios y proyectos activos</p>
+        </div>
+        <button class="btn btn-green" onclick="openProjectModal()" data-i18n="project.new">+ Nuevo Proyecto</button>
+      </div>
+      <div class="projects-grid" id="projectsGrid"></div>
+    </main>
+  </div>
+</div>
+
+<!-- ===== PAGE: ROADMAP ===== -->
+<div id="page-roadmap" class="page">
+  <div style="max-width:1100px;margin:0 auto;padding:40px 24px">
+    <div class="section-title" data-i18n="roadmap.title">🗺️ Roadmap del Programador</div>
+    <p class="section-subtitle" data-i18n="roadmap.sub">Tu guía de aprendizaje estructurada por niveles — de Fundamentos a Expert</p>
+    <div class="roadmap-grid" id="roadmapGrid"></div>
+    <div class="divider"></div>
+    <div class="section-title" style="margin-bottom:20px" data-i18n="code.title">💻 Código en Acción</div>
+    <div class="code-header"><div class="code-dots"><div class="code-dot" style="background:#ff5f57"></div><div class="code-dot" style="background:#febc2e"></div><div class="code-dot" style="background:#28c840"></div></div><span>developer.ts</span><span style="color:var(--accent-light)">● TypeScript</span></div>
+    <div class="code-block"><span class="cm">// 🚀 DevHub API — Gestión de Proyectos</span>
+<span class="kw">import</span> { <span class="cl">Router</span>, <span class="cl">Request</span>, <span class="cl">Response</span> } <span class="kw">from</span> <span class="str">'express'</span>;
+
+<span class="kw">interface</span> <span class="cl">Task</span> { id: <span class="cl">string</span>; title: <span class="cl">string</span>; status: <span class="str">'pend'</span>|<span class="str">'dev'</span>|<span class="str">'future'</span>|<span class="str">'done'</span>; }
+
+router.<span class="fn">post</span>(<span class="str">'/tasks'</span>, <span class="kw">async</span> (req: <span class="cl">Request</span>&lt;{},{},<span class="cl">Task</span>&gt;, res: <span class="cl">Response</span>) => {
+  <span class="kw">const</span> task = <span class="kw">await</span> prisma.task.<span class="fn">create</span>({ data: req.body });
+  res.<span class="fn">status</span>(<span class="num">201</span>).<span class="fn">json</span>(task);
+});
+
+<span class="cm">// Scrum board columns</span>
+<span class="kw">const</span> columns = [<span class="str">'pend'</span>, <span class="str">'dev'</span>, <span class="str">'future'</span>, <span class="str">'done'</span>] <span class="kw">as const</span>;
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="str">`Board has ${columns.length} columns`</span>);</div>
+  </div>
+</div>
+
+<footer>
+  <div style="font-size:1.4rem;margin-bottom:14px">
+    <svg width="26" height="26" viewBox="0 0 32 32" fill="none" style="vertical-align:middle;margin-right:6px"><rect width="32" height="32" rx="8" fill="#238636"/><path d="M8 10L14 16L8 22M16 22H24" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>DevHub
+  </div>
+  <p style="margin-bottom:6px">© 2026 DevHub — <span data-i18n="footer.text">El universo del Programador</span></p>
+  <p><a href="#">Términos</a> · <a href="#">Privacidad</a> · <a href="#">API Docs</a></p>
+</footer>
+</body>
+<script src="js/script.js"></script>
+</html>
