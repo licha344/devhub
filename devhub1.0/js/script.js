@@ -73,6 +73,19 @@ function setLang(lang) {
   renderBranches();
 }
 
+function escapeHTML(value) {
+  return String(value ?? '').replace(/[&<>\"']/g, char => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', "'": '&#39;'
+  })[char]);
+}
+
+function formatTaskDate(value) {
+  if (!value) return '–';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  const [year, month, day] = value.split('-').map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
 function t(key) { return LANGS[currentLang][key] || LANGS['es'][key] || key; }
 
 function applyTranslations() {
@@ -137,7 +150,7 @@ function doLogout() {
 }
 
 function renderSidebarsUser() {
-  const html = `<div class="user-profile"><div class="user-avatar">${currentUser.avatar}</div><div><div class="user-name">${currentUser.name}</div><div class="user-role">${currentUser.role}</div></div></div>`;
+  const html = `<div class="user-profile"><div class="user-avatar">${escapeHTML(currentUser.avatar)}</div><div><div class="user-name">${escapeHTML(currentUser.name)}</div><div class="user-role">${escapeHTML(currentUser.role)}</div></div></div>`;
   document.getElementById('sidebarUser').innerHTML = html;
   document.getElementById('sidebarUser2').innerHTML = html;
 }
@@ -162,14 +175,14 @@ function showPage(id) {
 // TASKS DATA
 // =============================================
 let tasks = [
-  { id:'DEV-01', title:'Implementar API REST con Node.js', branch:'Backend', status:'dev', priority:'high', date:'06 mar 2026', desc:'Endpoints CRUD completos con autenticación JWT' },
-  { id:'DEV-02', title:'Diseñar UI del Dashboard', branch:'Frontend', status:'pend', priority:'mid', date:'10 mar 2026', desc:'Componentes React con Tailwind CSS' },
-  { id:'DEV-03', title:'Setup Pipeline CI/CD', branch:'DevOps', status:'dev', priority:'high', date:'08 mar 2026', desc:'GitHub Actions con deploy automático' },
-  { id:'DEV-04', title:'Modelo ML Recomendaciones', branch:'Data', status:'future', priority:'low', date:'20 mar 2026', desc:'Algoritmo de filtrado colaborativo' },
-  { id:'DEV-05', title:'App móvil Flutter', branch:'Mobile', status:'pend', priority:'mid', date:'15 mar 2026', desc:'Módulo de autenticación y perfil de usuario' },
-  { id:'DEV-06', title:'Tests unitarios Backend', branch:'QA', status:'done', priority:'mid', date:'01 mar 2026', desc:'Coverage > 80% en módulos críticos' },
-  { id:'DEV-07', title:'Configurar base de datos PostgreSQL', branch:'Backend', status:'done', priority:'high', date:'28 feb 2026', desc:'Migraciones y seeders iniciales' },
-  { id:'DEV-08', title:'Smart contracts Solidity', branch:'Backend', status:'future', priority:'low', date:'30 mar 2026', desc:'Contratos ERC-20 para tokenización' },
+  { id:'DEV-01', title:'Implementar API REST con Node.js', branch:'Backend', status:'dev', priority:'high', date:'2026-03-06', desc:'Endpoints CRUD completos con autenticación JWT' },
+  { id:'DEV-02', title:'Diseñar UI del Dashboard', branch:'Frontend', status:'pend', priority:'mid', date:'2026-03-10', desc:'Componentes React con Tailwind CSS' },
+  { id:'DEV-03', title:'Setup Pipeline CI/CD', branch:'DevOps', status:'dev', priority:'high', date:'2026-03-08', desc:'GitHub Actions con deploy automático' },
+  { id:'DEV-04', title:'Modelo ML Recomendaciones', branch:'Data', status:'future', priority:'low', date:'2026-03-20', desc:'Algoritmo de filtrado colaborativo' },
+  { id:'DEV-05', title:'App móvil Flutter', branch:'Mobile', status:'pend', priority:'mid', date:'2026-03-15', desc:'Módulo de autenticación y perfil de usuario' },
+  { id:'DEV-06', title:'Tests unitarios Backend', branch:'QA', status:'done', priority:'mid', date:'2026-03-01', desc:'Coverage > 80% en módulos críticos' },
+  { id:'DEV-07', title:'Configurar base de datos PostgreSQL', branch:'Backend', status:'done', priority:'high', date:'2026-02-28', desc:'Migraciones y seeders iniciales' },
+  { id:'DEV-08', title:'Smart contracts Solidity', branch:'Backend', status:'future', priority:'low', date:'2026-03-30', desc:'Contratos ERC-20 para tokenización' },
 ];
 
 let taskIdCounter = 9;
@@ -198,14 +211,14 @@ function renderTaskCard(tk, delay = 0) {
   const color = branchColors[tk.branch] || '#8b949e';
   const pColor = priorityColors[tk.priority] || '#8b949e';
   const isDone = tk.status === 'done';
-  return `<div class="task-card${isDone?' done':''}" style="animation-delay:${delay*0.08}s" draggable="true" ondragstart="dragStart(event,'${tk.id}')" onclick="openTaskDetail('${tk.id}')">
+  return `<div class="task-card${isDone?' done':''}" style="animation-delay:${delay*0.08}s" draggable="true" ondragstart="dragStart(event,'${escapeHTML(tk.id)}')" onclick="openTaskDetail('${escapeHTML(tk.id)}')">
     <div class="task-priority" style="background:${pColor}"></div>
-    <div class="task-tags"><span class="tag" style="background:${color}22;color:${color};border-color:${color}44">${tk.branch}</span></div>
-    <div class="task-title-text">${tk.title}</div>
+    <div class="task-tags"><span class="tag" style="background:${color}22;color:${color};border-color:${color}44">${escapeHTML(tk.branch)}</span></div>
+    <div class="task-title-text">${escapeHTML(tk.title)}</div>
     <div class="task-meta">
-      <span class="task-id-badge">${tk.id}</span>
-      <span class="task-date-text">📅 ${tk.date}</span>
-      <div class="task-avatar" style="background:${color}">${tk.branch.slice(0,2)}</div>
+      <span class="task-id-badge">${escapeHTML(tk.id)}</span>
+      <span class="task-date-text">📅 ${escapeHTML(formatTaskDate(tk.date))}</span>
+      <div class="task-avatar" style="background:${color}">${escapeHTML(tk.branch.slice(0,2))}</div>
     </div>
   </div>`;
 }
@@ -259,6 +272,7 @@ function openTaskDetail(id) {
   document.getElementById('taskStatus').value = task.status;
   document.getElementById('taskPriority').value = task.priority;
   document.getElementById('taskDesc').value = task.desc || '';
+  document.getElementById('taskDate').value = /^\d{4}-\d{2}-\d{2}$/.test(task.date) ? task.date : '';
   document.getElementById('taskModal').classList.remove('hidden');
   editingStatus = task.id;
 }
@@ -270,14 +284,13 @@ function saveTask() {
   const branch = document.getElementById('taskBranch').value;
   const priority = document.getElementById('taskPriority').value;
   const desc = document.getElementById('taskDesc').value;
-  const date = document.getElementById('taskDate').value || '–';
-  const dateFormatted = date !== '–' ? new Date(date).toLocaleDateString('es', {day:'2-digit',month:'short',year:'numeric'}) : '–';
+  const date = document.getElementById('taskDate').value;
 
   if (typeof editingStatus === 'string' && editingStatus.startsWith('DEV-')) {
     const task = tasks.find(t => t.id === editingStatus);
-    if (task) { Object.assign(task, { title, status, branch, priority, desc, date: dateFormatted }); }
+    if (task) { Object.assign(task, { title, status, branch, priority, desc, date }); }
   } else {
-    tasks.push({ id:`DEV-${String(taskIdCounter++).padStart(2,'0')}`, title, branch, status, priority, date:dateFormatted, desc });
+    tasks.push({ id:`DEV-${String(taskIdCounter++).padStart(2,'0')}`, title, branch, status, priority, date, desc });
   }
   closeTaskModal();
   renderBoard();
@@ -319,13 +332,13 @@ function renderBacklog() {
   container.innerHTML = filtered.sort((a,b) => statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status)).map(tk => {
     const color = branchColors[tk.branch] || '#8b949e';
     const sc = statusColors[tk.status];
-    return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.2s" onmouseover="this.style.borderColor='${color}'" onmouseout="this.style.borderColor='var(--border)'" onclick="openTaskDetail('${tk.id}')">
-      <span style="font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text-dim);min-width:58px">${tk.id}</span>
-      <div style="flex:1"><div style="font-size:.875rem;font-weight:600">${tk.title}</div><div style="font-size:.75rem;color:var(--text-muted)">${tk.desc||''}</div></div>
-      <span class="tag" style="background:${color}22;color:${color};border-color:${color}44">${tk.branch}</span>
-      <span class="tag" style="background:${sc}22;color:${sc};border-color:${sc}44">${t('col.'+tk.status)}</span>
-      <span style="font-size:.75rem;color:var(--text-muted)">📅 ${tk.date}</span>
-      <button class="btn btn-red btn-sm" onclick="event.stopPropagation();deleteTask('${tk.id}')">🗑️</button>
+    return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.2s" onmouseover="this.style.borderColor='${color}'" onmouseout="this.style.borderColor='var(--border)'" onclick="openTaskDetail('${escapeHTML(tk.id)}')">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text-dim);min-width:58px">${escapeHTML(tk.id)}</span>
+      <div style="flex:1"><div style="font-size:.875rem;font-weight:600">${escapeHTML(tk.title)}</div><div style="font-size:.75rem;color:var(--text-muted)">${escapeHTML(tk.desc||'')}</div></div>
+      <span class="tag" style="background:${color}22;color:${color};border-color:${color}44">${escapeHTML(tk.branch)}</span>
+      <span class="tag" style="background:${sc}22;color:${sc};border-color:${sc}44">${escapeHTML(t('col.'+tk.status))}</span>
+      <span style="font-size:.75rem;color:var(--text-muted)">📅 ${escapeHTML(formatTaskDate(tk.date))}</span>
+      <button class="btn btn-red btn-sm" onclick="event.stopPropagation();deleteTask('${escapeHTML(tk.id)}')">🗑️</button>
     </div>`;
   }).join('');
 }
@@ -417,16 +430,16 @@ function renderProjects() {
       <style>.project-card:hover{border-left-color:${color}!important}</style>
       <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,${color},${color}88)"></div>
       <div class="project-header">
-        <div class="project-name">${p.name}</div>
+        <div class="project-name">${escapeHTML(p.name)}</div>
         <span class="project-visibility">${p.vis === 'Privado' ? '🔒 Privado' : '🌐 Público'}</span>
       </div>
-      <div class="project-desc">${p.desc}</div>
-      <div class="progress-mini"><div class="progress-mini-fill" style="width:${p.progress}%;background:${color}"></div></div>
-      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:.72rem;color:var(--text-muted)"><span>${p.progress}% completado</span><span>${p.tasks} tareas</span></div>
+      <div class="project-desc">${escapeHTML(p.desc)}</div>
+      <div class="progress-mini"><div class="progress-mini-fill" style="width:${escapeHTML(p.progress)}%;background:${color}"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:.72rem;color:var(--text-muted)"><span>${escapeHTML(p.progress)}% completado</span><span>${escapeHTML(p.tasks)} tareas</span></div>
       <div class="project-footer">
-        <div class="project-meta-item"><span style="color:${color}">●</span>${p.lang}</div>
+        <div class="project-meta-item"><span style="color:${color}">●</span>${escapeHTML(p.lang)}</div>
         <div class="project-meta-item">⭐ ${p.stars}</div>
-        <div class="project-meta-item" style="background:rgba(35,134,54,.15);padding:2px 8px;border-radius:20px;border:1px solid rgba(35,134,54,.3);color:#2ea043;font-size:.68rem;font-family:'JetBrains Mono',monospace">${p.method}</div>
+        <div class="project-meta-item" style="background:rgba(35,134,54,.15);padding:2px 8px;border-radius:20px;border:1px solid rgba(35,134,54,.3);color:#2ea043;font-size:.68rem;font-family:'JetBrains Mono',monospace">${escapeHTML(p.method)}</div>
       </div>
     </div>`;
   }).join('');
